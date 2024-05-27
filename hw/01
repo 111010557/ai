@@ -1,1 +1,108 @@
+import random
+
+# 課程、老師和教室的資料
+courses = [
+    {'teacher': ' ', 'name': ' ', 'hours': -1},  # No class
+    {'teacher': '甲', 'name': '機率', 'hours': 2},
+    {'teacher': '甲', 'name': '線代', 'hours': 3},
+    {'teacher': '甲', 'name': '離散', 'hours': 3},
+    {'teacher': '乙', 'name': '視窗', 'hours': 3},
+    {'teacher': '乙', 'name': '科學', 'hours': 3},
+    {'teacher': '乙', 'name': '系統', 'hours': 3},
+    {'teacher': '乙', 'name': '計概', 'hours': 3},
+    {'teacher': '丙', 'name': '軟工', 'hours': 3},
+    {'teacher': '丙', 'name': '行動', 'hours': 3},
+    {'teacher': '丙', 'name': '網路', 'hours': 3},
+    {'teacher': '丁', 'name': '媒體', 'hours': 3},
+    {'teacher': '丁', 'name': '工數', 'hours': 3},
+    {'teacher': '丁', 'name': '動畫', 'hours': 3},
+    {'teacher': '丁', 'name': '電子', 'hours': 4},
+    {'teacher': '丁', 'name': '嵌入', 'hours': 3},
+    {'teacher': '戊', 'name': '網站', 'hours': 3},
+    {'teacher': '戊', 'name': '網頁', 'hours': 3},
+    {'teacher': '戊', 'name': '演算', 'hours': 3},
+    {'teacher': '戊', 'name': '結構', 'hours': 3},
+    {'teacher': '戊', 'name': '智慧', 'hours': 3}
+]
+
+teachers = ['甲', '乙', '丙', '丁', '戊']
+
+rooms = ['A', 'B']
+
+slots = [
+    'A11', 'A12', 'A13', 'A14', 'A15', 'A16', 'A17',
+    'A21', 'A22', 'A23', 'A24', 'A25', 'A26', 'A27',
+    'A31', 'A32', 'A33', 'A34', 'A35', 'A36', 'A37',
+    'A41', 'A42', 'A43', 'A44', 'A45', 'A46', 'A47',
+    'A51', 'A52', 'A53', 'A54', 'A55', 'A56', 'A57',
+    'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17',
+    'B21', 'B22', 'B23', 'B24', 'B25', 'B26', 'B27',
+    'B31', 'B32', 'B33', 'B34', 'B35', 'B36', 'B37',
+    'B41', 'B42', 'B43', 'B44', 'B45', 'B46', 'B47',
+    'B51', 'B52', 'B53', 'B54', 'B55', 'B56', 'B57'
+]
+
+# 初始化排課表
+def initialize_schedule(courses, slots):
+    schedule = {}
+    available_slots = slots.copy()
+    for course in courses:
+        if course['hours'] == -1:
+            continue
+        for _ in range(course['hours']):
+            if available_slots:
+                slot = random.choice(available_slots)
+                schedule[slot] = course
+                available_slots.remove(slot)
+    return schedule
+
+# 計算違反約束數量
+def evaluate_schedule(schedule):
+    violations = 0
+    teacher_slots = {teacher: [] for teacher in teachers}
+    for slot, course in schedule.items():
+        if course['hours'] == -1:
+            continue
+        teacher_slots[course['teacher']].append(slot)
+    
+    # 檢查同一老師是否有時間衝突
+    for teacher, slots in teacher_slots.items():
+        day_time_slots = {}
+        for slot in slots:
+            day, time = slot[1], slot[2]
+            if (day, time) in day_time_slots:
+                violations += 1
+            else:
+                day_time_slots[(day, time)] = 1
+    return violations
+
+# 產生鄰域解
+def generate_neighbor(schedule):
+    neighbor = schedule.copy()
+    slot1, slot2 = random.sample(list(schedule.keys()), 2)
+    neighbor[slot1], neighbor[slot2] = neighbor[slot2], neighbor[slot1]
+    return neighbor
+
+# 爬山演算法
+def hill_climbing(courses, slots):
+    current_schedule = initialize_schedule(courses, slots)
+    current_eval = evaluate_schedule(current_schedule)
+    
+    while True:
+        neighbor = generate_neighbor(current_schedule)
+        neighbor_eval = evaluate_schedule(neighbor)
+        if neighbor_eval < current_eval:
+            current_schedule = neighbor
+            current_eval = neighbor_eval
+        else:
+            break
+    
+    return current_schedule, current_eval
+
+# 執行爬山演算法
+final_schedule, final_eval = hill_climbing(courses, slots)
+
+# 打印最終排課表和違反約束數量
+print("Final Schedule:", final_schedule)
+print("Violations:", final_eval)
 
