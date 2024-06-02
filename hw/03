@@ -1,1 +1,41 @@
+# 參考GPT
+from random import choice
+
+def f(xyz):
+    return 3*xyz[0] + 2*xyz[1] + 5*xyz[2]
+
+def limit(xyz):
+    # 檢查所有變量是否非負
+    for i in xyz:
+        if i < 0:
+            return False
+    # 檢查所有約束條件
+    if xyz[0] + xyz[1] > 10 or 2*xyz[0] + xyz[2] > 9 or xyz[1] + 2*xyz[2] > 11:
+        return False
+    return True
+
+STEP = 0.01
+MAX_FAILS = 100000
+
+def hillClimbing(equation):
+    fail = 0
+    while fail < MAX_FAILS:
+        temp = equation.copy()
+        # 隨機選擇一個變量並進行微調
+        index = choice(range(len(temp)))
+        temp[index] += STEP * choice([1, -1])
+        # 如果新解更好且滿足限制條件，接受新解
+        if f(temp) > f(equation) and limit(temp):
+            equation = temp
+            fail = 0
+            print(equation, f(equation))
+        else:
+            fail += 1
+    return equation
+
+# 初始化解
+initial_solution = [2, 2, 2]
+ans = hillClimbing(initial_solution)
+print("最佳解:", ans)
+print("最佳解的目標函數值:", f(ans))
 
