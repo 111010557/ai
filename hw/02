@@ -1,1 +1,68 @@
+## 在此參考 GPT大神跟老師上船的可參考資源
+import random
+import math
 
+# 定義城市座標
+citys = [
+    (0, 3), (0, 0),
+    (0, 2), (0, 1),
+    (1, 0), (1, 3),
+    (2, 0), (2, 3),
+    (3, 0), (3, 3),
+    (3, 1), (3, 2)
+]
+
+# 初始路徑
+l = len(citys)
+path = [(i + 1) % l for i in range(l)]
+print("初始路徑:", path)
+
+# 定義計算兩個城市之間距離的函數
+def distance(p1, p2):
+    x1, y1 = p1
+    x2, y2 = p2
+    return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+
+# 計算路徑總距離的函數
+def pathLength(p):
+    dist = 0
+    plen = len(p)
+    for i in range(plen):
+        dist += distance(citys[p[i]], citys[p[(i + 1) % plen]])
+    return dist
+
+print('初始路徑長度:', pathLength(path))
+
+# 定義隨機生成初始解的函數
+def random_tour(l):
+    tour = list(range(l))
+    random.shuffle(tour)
+    return tour
+
+# 定義鄰居生成函數（兩個城市交換位置）
+def get_neighbors(tour):
+    neighbors = []
+    for i in range(len(tour)):
+        for j in range(i + 1, len(tour)):
+            neighbor = tour[:]
+            neighbor[i], neighbor[j] = neighbor[j], neighbor[i]
+            neighbors.append(neighbor)
+    return neighbors
+
+# 爬山演算法
+def hill_climbing(citys):
+    current_tour = random_tour(len(citys))
+    current_distance = pathLength(current_tour)
+    while True:
+        neighbors = get_neighbors(current_tour)
+        next_tour = min(neighbors, key=lambda tour: pathLength(tour))
+        next_distance = pathLength(next_tour)
+        if next_distance >= current_distance:
+            break
+        current_tour, current_distance = next_tour, next_distance
+    return current_tour, current_distance
+
+# 使用爬山演算法解決旅行推銷員問題
+tour, distance = hill_climbing(citys)
+print("最佳路徑:", tour)
+print("最佳路徑的總距離:", distance)
