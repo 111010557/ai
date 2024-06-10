@@ -1,1 +1,37 @@
+# 參考了老師提供的資源以及GPT
+import gym
+import numpy as np
+
+env = gym.make('CartPole-v1')
+observation = env.reset()
+
+# 設置最大運行步數
+max_steps = 200
+
+# 改進的固定策略
+def improved_fixed_strategy(observation):
+    angle = observation[2]
+    angular_velocity = observation[3]
+    if angle > 0:
+        if angular_velocity > 0:
+            return 1  # 強烈向右移動
+        else:
+            return 1  # 向右移動
+    else:
+        if angular_velocity < 0:
+            return 0  # 強烈向左移動
+        else:
+            return 0  # 向左移動
+
+total_reward = 0
+for step in range(max_steps):
+    env.render()
+    action = improved_fixed_strategy(observation)
+    observation, reward, done, info = env.step(action)
+    total_reward += reward
+    if done:
+        break
+
+env.close()
+print(f'Total reward: {total_reward}')
 
