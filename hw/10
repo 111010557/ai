@@ -1,3 +1,4 @@
+# 完全複製GPT
 import faiss
 import numpy as np
 
