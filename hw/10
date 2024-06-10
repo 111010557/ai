@@ -1,1 +1,59 @@
+import faiss
+import numpy as np
+
+# 假設我們有一個包含大量文本的列表
+knowledge_base = [
+    "Python 是一種高級編程語言。",
+    "OpenAI 是一家致力於人工智能研究的公司。",
+    "GPT-3 是一種強大的語言模型。",
+    # 更多的文本...
+]
+
+# 創建一個 FAISS 索引
+dimension = 768  # 嵌入向量的維度
+index = faiss.IndexFlatL2(dimension)
+
+# 使用 OpenAI API 將文本轉換為嵌入向量
+openai.api_key = 'your-openai-api-key'
+
+def get_embedding(text):
+    response = openai.Embedding.create(
+        input=text,
+        model="text-embedding-ada-002"  # 假設我們使用這個模型來獲取嵌入
+    )
+    return np.array(response['data'][0]['embedding'])
+
+# 為知識庫中的每個文本計算嵌入並添加到索引中
+embeddings = np.array([get_embedding(text) for text in knowledge_base])
+index.add(embeddings)
+
+def retrieve_relevant_text(query, top_k=3):
+    query_embedding = get_embedding(query).reshape(1, -1)
+    distances, indices = index.search(query_embedding, top_k)
+    return [knowledge_base[idx] for idx in indices[0]]
+
+def generate_answer(question):
+    relevant_texts = retrieve_relevant_text(question)
+    context = " ".join(relevant_texts)
+    prompt = f"問題: {question}\n相關背景: {context}\n答案:"
+
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=prompt,
+        max_tokens=150,
+        temperature=0.7,
+    )
+    answer = response.choices[0].text.strip()
+    return answer
+
+# 主程序循環
+if __name__ == "__main__":
+    print("歡迎使用 RAG 問答系統！")
+    while True:
+        question = input("請輸入你的問題 (或輸入 '退出' 結束)：")
+        if question.lower() in ["退出", "exit", "quit"]:
+            print("感謝使用，再見！")
+            break
+        answer = generate_answer(question)
+        print("回答：", answer)
 
